@@ -3,183 +3,126 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Portfólio</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <title>Portfólio | Desenvolvedor Full Stack</title>
   <link rel="stylesheet" href="style.css">
+  
+  <!-- Firebase SDKs (v8 Compat para JS puro) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 </head>
 <body>
+
+  <!-- Background Animado Interativo -->
   <canvas id="bg-canvas"></canvas>
 
-  <div id="public-view" class="page">
-    <nav>
-      <div class="wrap">
-        <div class="brand" id="view-name">Seu Nome</div>
-        <div class="nav-links">
-          <a href="#about">Sobre</a>
-          <a href="#tech">Tech Stack</a>
-          <a href="#projects">Projetos</a>
-          <a href="#contact">Contato</a>
-        </div>
+  <!-- Botão Flutuante de Acesso ao Painel Admin -->
+  <button id="admin-fab" title="Acessar Painel de Administração">⚙️</button>
+
+  <!-- Modal de Login do Admin -->
+  <div id="login-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-card">
+      <h3>Acesso Administrativo</h3>
+      <p style="color: var(--text-dim); font-size: 0.9rem; margin-bottom: 1rem;">Digite a senha para gerenciar o conteúdo do site.</p>
+      <input type="password" id="admin-pass-input" placeholder="Senha do Administrador">
+      <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 1rem;">
+        <button id="close-login-btn" class="btn btn-ghost">Cancelar</button>
+        <button id="login-btn" class="btn btn-primary">Entrar</button>
       </div>
-    </nav>
+    </div>
+  </div>
 
-    <main class="wrap">
-      <section class="hero">
-        <div class="eyebrow" id="view-hero-eyebrow">Desenvolvedor · Design de interfaces</div>
-        <h1 id="view-hero-title">Eu construo sites com estética e propósito.</h1>
-        <p class="lede" id="view-hero-subtitle">Portfólio de projetos de desenvolvimento web.</p>
-        <div class="hero-actions">
-          <a href="#projects" class="btn btn-primary">Ver projetos</a>
-          <a href="#contact" class="btn btn-ghost">Entrar em contato</a>
-        </div>
+  <!-- VISUALIZAÇÃO PÚBLICA (PORTFÓLIO) -->
+  <div id="public-view">
+    <header class="container hero-section">
+      <div class="eyebrow" id="view-hero-eyebrow">Carregando...</div>
+      <h1 id="view-hero-title">Carregando título...</h1>
+      <p class="subtitle" id="view-hero-subtitle">Carregando sub-título...</p>
+    </header>
+
+    <main class="container">
+      <!-- Seção Sobre Mim -->
+      <section class="section">
+        <h2 class="section-title" id="view-about-title">Sobre mim</h2>
+        <p id="view-about-text" class="about-text">...</p>
+        
+        <h3 style="margin-top: 1.5rem; margin-bottom: 0.75rem; font-size: 1.1rem; color: var(--purple-light);">Tecnologias & Ferramentas</h3>
+        <div id="view-tech-grid" class="tech-grid"></div>
       </section>
 
-      <section id="about" class="section">
-        <div class="section-head">
-          <h2 id="view-about-title">Sobre</h2>
-          <span class="section-num mono">/01</span>
+      <!-- Seção Projetos -->
+      <section class="section">
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem;">
+          <h2 class="section-title" style="margin-bottom: 0;">Projetos</h2>
+          <span id="view-projects-count" style="color: var(--text-dim); font-size: 0.85rem;">0 no total</span>
         </div>
-        <p class="about-text" id="view-about-text">Escreva aqui sua história...</p>
+        <div id="view-projects-grid" class="projects-grid"></div>
       </section>
 
-      <section id="tech" class="section">
-        <div class="section-head">
-          <h2>Tecnologias</h2>
-          <span class="section-num mono">/02</span>
-        </div>
-        <div class="tech-grid" id="view-tech-grid"></div>
-      </section>
-
-      <section id="projects" class="section">
-        <div class="section-head">
-          <h2>Projetos</h2>
-          <span class="section-num mono" id="view-projects-count">0 no total</span>
-        </div>
-        <div class="projects-grid" id="view-projects-grid"></div>
-      </section>
-
-      <section id="contact" class="section">
-        <div class="contact-box">
-          <div>
-            <h2 id="view-contact-title">Vamos conversar</h2>
-            <p id="view-contact-text" style="color: var(--muted); margin-top: 8px;">Disponível para novos projetos.</p>
-          </div>
-          <div class="links-row" id="view-contact-links"></div>
-        </div>
+      <!-- Seção Contato -->
+      <section class="section">
+        <h2 class="section-title" id="view-contact-title">Vamos conversar?</h2>
+        <p id="view-contact-text" style="color: var(--text-dim); margin-bottom: 1.5rem;">...</p>
+        <div id="view-contact-links" style="display: flex; gap: 12px; flex-wrap: wrap;"></div>
       </section>
     </main>
 
-    <footer>
-      <div class="wrap" style="width: 100%;">
-        <span id="view-footer-name">© Seu Nome</span>
-        <span>Modo Dark</span>
-      </div>
+    <footer class="container" style="padding: 2rem 1.5rem; text-align: center; border-top: 1px solid var(--line); margin-top: 4rem; color: var(--text-dim); font-size: 0.85rem;">
+      <span id="view-footer-name">© Pedro Santos</span> · Todos os direitos reservados.
     </footer>
-
-    <button id="admin-fab" title="Painel Adm">⚙️</button>
   </div>
 
-  <div id="login-modal" class="overlay" style="display: none;">
-    <div class="modal">
-      <h3 style="margin-bottom: 16px;">Painel de Controle</h3>
-      <div class="field">
-        <label>Senha de Administrador</label>
-        <input type="password" id="admin-pass-input" placeholder="Digite sua senha">
-      </div>
-      <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px;">
-        <button class="btn btn-ghost" id="close-login-btn">Cancelar</button>
-        <button class="btn btn-primary" id="login-btn">Entrar</button>
+  <!-- PAINEL ADM (EDITÁVEL) -->
+  <div id="admin-view" class="container" style="display: none; padding-top: 2rem; padding-bottom: 4rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--line); padding-bottom: 1rem;">
+      <h2>Painel de Controle</h2>
+      <div style="display: flex; gap: 10px;">
+        <button id="exit-admin-btn" class="btn btn-ghost">Sair sem Salvar</button>
+        <button id="save-all-btn" class="btn btn-primary">Salvar Alterações</button>
       </div>
     </div>
-  </div>
 
-  <div id="admin-view" style="display: none;">
-    <div class="wrap">
-      <div class="admin-topbar" style="display: flex; justify-content: space-between; align-items: center;">
-        <h2>Painel Administrativo</h2>
-        <button class="btn btn-ghost" id="exit-admin-btn">Sair do Painel</button>
+    <div class="admin-grid">
+      <!-- Dados Gerais -->
+      <div class="admin-card">
+        <h3>Informações Pessoais & Hero</h3>
+        <div class="field"><label>Seu Nome</label><input type="text" id="adm-name"></div>
+        <div class="field"><label>Slogan/Eyebrow</label><input type="text" id="adm-hero-eyebrow"></div>
+        <div class="field"><label>Título Principal (Hero)</label><input type="text" id="adm-hero-title"></div>
+        <div class="field"><label>Subtítulo (Hero)</label><textarea id="adm-hero-subtitle" rows="3"></textarea></div>
       </div>
 
+      <!-- Sobre Mim -->
       <div class="admin-card">
-        <h3>Informações Pessoais</h3>
-        <div class="field" style="margin-top: 12px;">
-          <label>Seu Nome</label>
-          <input type="text" id="adm-name">
-        </div>
+        <h3>Sobre Mim</h3>
+        <div class="field"><label>Título da Seção</label><input type="text" id="adm-about-title"></div>
+        <div class="field"><label>Texto Sobre Você</label><textarea id="adm-about-text" rows="4"></textarea></div>
+        <div class="field"><label>Tecnologias (separadas por vírgula)</label><input type="text" id="adm-tech-list"></div>
       </div>
 
-      <div class="admin-card">
-        <h3>Seção Principal (Hero)</h3>
-        <div class="field" style="margin-top: 12px;">
-          <label>Linha pequena acima do título</label>
-          <input type="text" id="adm-hero-eyebrow">
-        </div>
-        <div class="field">
-          <label>Título grande</label>
-          <input type="text" id="adm-hero-title">
-        </div>
-        <div class="field">
-          <label>Subtítulo / Descrição</label>
-          <textarea id="adm-hero-subtitle" rows="2"></textarea>
-        </div>
-      </div>
-
-      <div class="admin-card">
-        <h3>Sobre</h3>
-        <div class="field" style="margin-top: 12px;">
-          <label>Título</label>
-          <input type="text" id="adm-about-title">
-        </div>
-        <div class="field">
-          <label>Texto sobre você</label>
-          <textarea id="adm-about-text" rows="4"></textarea>
-        </div>
-      </div>
-
-      <div class="admin-card">
-        <h3>Tecnologias</h3>
-        <div class="field" style="margin-top: 12px;">
-          <label>Lista separada por vírgula</label>
-          <input type="text" id="adm-tech-list">
-        </div>
-      </div>
-
-      <div class="admin-card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <!-- Gerenciar Projetos -->
+      <div class="admin-card" style="grid-column: 1 / -1;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
           <h3>Projetos</h3>
-          <button type="button" class="btn btn-ghost" id="add-project-btn">+ Adicionar Projeto</button>
+          <button id="add-project-btn" class="btn btn-ghost" style="font-size: 0.85rem;">+ Adicionar Projeto</button>
         </div>
-        <div id="adm-projects-list" style="display: flex; flex-direction: column; gap: 16px;"></div>
+        <div id="adm-projects-list" style="display: flex; flex-direction: column; gap: 1rem;"></div>
       </div>
 
-      <div class="admin-card">
-        <h3>Contato</h3>
-        <div class="field" style="margin-top: 12px;">
-          <label>Título</label>
-          <input type="text" id="adm-contact-title">
+      <!-- Contato -->
+      <div class="admin-card" style="grid-column: 1 / -1;">
+        <h3>Contato & Links</h3>
+        <div class="field"><label>Título da Seção</label><input type="text" id="adm-contact-title"></div>
+        <div class="field"><label>Texto de Chamada</label><input type="text" id="adm-contact-text"></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; margin-bottom: 0.5rem;">
+          <label>Links de Redes Sociais</label>
+          <button id="add-link-btn" class="btn btn-ghost" style="font-size: 0.8rem;">+ Adicionar Link</button>
         </div>
-        <div class="field">
-          <label>Texto</label>
-          <input type="text" id="adm-contact-text">
-        </div>
-        <div style="margin-top: 16px;">
-          <label style="font-size: 0.8rem; color: var(--muted);">Links de Contato</label>
-          <div id="adm-links-list" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;"></div>
-          <button type="button" class="btn btn-ghost" id="add-link-btn" style="margin-top: 8px;">+ Adicionar Link</button>
-        </div>
-      </div>
-
-      <div class="save-bar">
-        <button class="btn btn-primary" id="save-all-btn">Salvar Alterações</button>
+        <div id="adm-links-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
       </div>
     </div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
