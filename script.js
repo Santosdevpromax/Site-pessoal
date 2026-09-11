@@ -1,6 +1,5 @@
 // =============================================================
 // CONFIGURAÇÃO DO FIREBASE
-// Certifique-se de manter suas credenciais válidas abaixo
 // =============================================================
 const firebaseConfig = {
   apiKey: "AIzaSy...", 
@@ -11,14 +10,13 @@ const firebaseConfig = {
   appId: "1:123456789:web:abc123def"
 };
 
-// Inicialização do Firebase
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 const db = firebase.firestore();
 const storage = firebase.storage();
 
-// Estado Global do Portfólio
+// Estado Global
 let siteData = {
   adminPassword: "admin",
   name: "Pedro Santos",
@@ -34,7 +32,7 @@ let siteData = {
       description: "Descrição completa do seu principal projeto.",
       tags: ["React", "Node.js", "Firebase"],
       link: "#",
-      imageUrl: "",
+      imageUrl: "https://picsum.photos/600/400",
       featured: true
     }
   ],
@@ -118,7 +116,7 @@ if (canvas && ctx) {
 }
 
 // =============================================================
-// 2. BANCO DE DADOS (FIRESTORE)
+// 2. FIRESTORE
 // =============================================================
 async function loadDataFromFirestore() {
   try {
@@ -127,7 +125,7 @@ async function loadDataFromFirestore() {
       siteData = { ...siteData, ...doc.data().payload };
     }
   } catch (err) {
-    console.warn("Aviso ao carregar Firestore (usando dados locais):", err.message);
+    console.warn("Usando dados locais:", err.message);
   }
   renderPublicView();
 }
@@ -164,16 +162,16 @@ async function saveDataToFirestore() {
 
   try {
     await db.collection("portfolio").doc("main").set({ payload: siteData });
-    alert("Alterações salvas com sucesso no banco de dados!");
+    alert("Alterações salvas com sucesso!");
     renderPublicView();
     closeAdmin();
   } catch (err) {
-    alert("Erro ao salvar no Firestore: " + err.message);
+    alert("Erro ao salvar: " + err.message);
   }
 }
 
 // =============================================================
-// 3. RENDERIZAÇÃO PÚBLICA
+// 3. RENDERIZAÇÃO PÚBLICA (VISUALIZAÇÃO DO SITE)
 // =============================================================
 function renderPublicView() {
   const getEl = (id) => document.getElementById(id);
@@ -200,19 +198,26 @@ function renderPublicView() {
 
   const projGrid = getEl("view-projects-grid");
   if (projGrid) {
-    projGrid.innerHTML = siteData.projects.map(p => `
-      <div class="project-card ${p.featured ? 'featured' : ''}">
-        <div class="project-media" style="background-image: url('${p.imageUrl || ''}')"></div>
-        <div class="project-body">
-          <h3>${p.title}</h3>
-          <p>${p.description}</p>
-          <div class="tag-row">
-            ${(p.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}
+    projGrid.innerHTML = siteData.projects.map(p => {
+      // Bloco da imagem formatado garantindo exibição de 200px de altura
+      const mediaHtml = p.imageUrl
+        ? `<div class="project-media" style="width: 100%; height: 210px; background-size: cover; background-position: center; background-image: url('${p.imageUrl}'); border-radius: 8px 8px 0 0;"></div>`
+        : `<div class="project-media" style="width: 100%; height: 160px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; color: #888; border-radius: 8px 8px 0 0;">Sem imagem</div>`;
+
+      return `
+        <div class="project-card ${p.featured ? 'featured' : ''}">
+          ${mediaHtml}
+          <div class="project-body">
+            <h3>${p.title}</h3>
+            <p>${p.description}</p>
+            <div class="tag-row">
+              ${(p.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}
+            </div>
+            ${p.link ? `<a href="${p.link}" target="_blank" class="project-link">Acessar projeto →</a>` : ''}
           </div>
-          ${p.link ? `<a href="${p.link}" target="_blank" class="project-link">Acessar projeto →</a>` : ''}
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
   }
 
   const linksContainer = getEl("view-contact-links");
@@ -224,7 +229,7 @@ function renderPublicView() {
 }
 
 // =============================================================
-// 4. PAINEL ADM & UPLOAD DE IMAGENS
+// 4. PAINEL DE ADMINISTRAÇÃO & UPLOAD
 // =============================================================
 function renderAdminFields() {
   document.getElementById("adm-name").value = siteData.name;
@@ -264,24 +269,23 @@ function renderAdminProjects() {
       <div class="field"><label>Link do Projeto</label><input type="text" class="proj-link" value="${p.link || ''}"></div>
       
       <div class="field">
-        <label>Imagem do Projeto</label>
-        <input type="text" class="proj-img-url" value="${p.imageUrl || ''}" placeholder="URL da imagem ou selecione o arquivo">
+        <label>Imagem do Projeto (URL ou Upload)</label>
+        <input type="text" class="proj-img-url" value="${p.imageUrl || ''}" placeholder="Cole uma URL pública ou escolha um arquivo">
         
         <div style="margin-top: 8px; display: flex; align-items: center; gap: 12px;">
-          <label for="${fileInputId}" class="btn btn-ghost" style="cursor: pointer;">
-            📁 Selecionar Arquivo
+          <label for="${fileInputId}" class="btn btn-ghost" style="cursor: pointer; display: inline-block; padding: 6px 12px;">
+            📁 Upload do Computador
           </label>
           <input type="file" id="${fileInputId}" accept="image/*" style="display: none;">
-          <span class="upload-status" style="font-size: 0.85rem; color: var(--purple-light);"></span>
+          <span class="upload-status" style="font-size: 0.85rem; color: #a78bfa;"></span>
         </div>
       </div>
 
       <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer;">
-        <input type="checkbox" class="proj-featured" ${p.featured ? 'checked' : ''}> Em Destaque (Largura total)
+        <input type="checkbox" class="proj-featured" ${p.featured ? 'checked' : ''}> Em Destaque (Dobra a largura)
       </label>
     `;
 
-    // Handler isolado de upload para cada arquivo
     const fileInput = card.querySelector(`#${fileInputId}`);
     const urlInput = card.querySelector(".proj-img-url");
     const statusSpan = card.querySelector(".upload-status");
@@ -290,8 +294,8 @@ function renderAdminProjects() {
       const file = e.target.files[0];
       if (!file) return;
 
-      statusSpan.innerText = "Enviando...";
-      statusSpan.style.color = "var(--purple-light)";
+      statusSpan.innerText = "Enviando imagem...";
+      statusSpan.style.color = "#a78bfa";
 
       try {
         const storageRef = storage.ref(`projects/${Date.now()}_${file.name}`);
@@ -301,11 +305,11 @@ function renderAdminProjects() {
         urlInput.value = downloadUrl;
         siteData.projects[idx].imageUrl = downloadUrl;
         
-        statusSpan.innerText = "✓ Concluído!";
+        statusSpan.innerText = "✓ Enviado!";
         statusSpan.style.color = "#10b981";
       } catch (err) {
-        statusSpan.innerText = "✕ Erro no envio";
-        statusSpan.style.color = "var(--danger)";
+        statusSpan.innerText = "✕ Erro ao enviar";
+        statusSpan.style.color = "#ef4444";
         alert("Erro no upload da imagem: " + err.message);
       }
     });
@@ -353,7 +357,7 @@ function addLink() {
 }
 
 // =============================================================
-// 5. EVENTOS E CONTROLE DE INTERFACE
+// 5. EVENTOS E CONTROLE
 // =============================================================
 const fab = document.getElementById("admin-fab");
 const loginModal = document.getElementById("login-modal");
@@ -395,5 +399,4 @@ if (addProjBtn) addProjBtn.addEventListener("click", addProject);
 const addLinkBtn = document.getElementById("add-link-btn");
 if (addLinkBtn) addLinkBtn.addEventListener("click", addLink);
 
-// Inicializar carregamento do banco de dados
 loadDataFromFirestore();
