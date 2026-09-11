@@ -1,12 +1,10 @@
 // =============================================================
-// CONFIGURAÇÃO DO FIREBASE
-// Certifique-se de manter suas credenciais válidas abaixo
+// CONFIGURAÇÃO DO FIREBASE (Coloque suas chaves reais aqui)
 // =============================================================
 const firebaseConfig = {
   apiKey: "AIzaSy...", 
   authDomain: "pedro-santos-7b4ce.firebaseapp.com",
   projectId: "pedro-santos-7b4ce",
-  storageBucket: "pedro-santos-7b4ce.appspot.com",
   messagingSenderId: "123456789",
   appId: "1:123456789:web:abc123def"
 };
@@ -16,7 +14,6 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 const db = firebase.firestore();
-const storage = firebase.storage();
 
 // Estado Global Inicial (Fallback)
 let siteData = {
@@ -27,19 +24,18 @@ let siteData = {
   heroSubtitle: "Desenvolvo sistemas completos do back-end ao front-end, acelerados por inteligência artificial para entregar resultados rápidos e eficientes.",
   aboutTitle: "Sobre mim",
   aboutText: "Sou desenvolvedor Full Stack com foco em criar aplicações de ponta a ponta, unindo arquiteturas sólidas no back-end com interfaces ágeis no front-end.",
-  techList: ["JavaScript", "TypeScript", "React", "Node.js", "Express", "Firebase", "PostgreSQL", "ChatGPT", "Claude", "Git"],
+  techList: ["JavaScript", "TypeScript", "React", "Node.js", "Express", "Firebase", "PostgreSQL", "Git"],
   projects: [
     {
-      title: "Projeto em Destaque",
-      description: "Descrição completa do seu principal projeto.",
-      tags: ["React", "Node.js", "Firebase"],
-      link: "#",
-      imageUrl: "https://picsum.photos/600/400",
+      title: "Projeto Exemplo",
+      description: "Descrição detalhada sobre as tecnologias, funcionalidades e resultados do projeto.",
+      tags: ["React", "Node.js", "Express"],
+      link: "https://github.com",
       featured: true
     }
   ],
   contactTitle: "Vamos conversar?",
-  contactText: "Disponível para novos projetos e parcerias.",
+  contactText: "Disponível para novos projetos e oportunidades.",
   contactLinks: [
     { label: "E-mail", url: "mailto:seuemail@gmail.com" },
     { label: "GitHub", url: "https://github.com" },
@@ -118,7 +114,7 @@ if (canvas && ctx) {
 }
 
 // =============================================================
-// 2. FIRESTORE (CARREGAR E SALVAR)
+// 2. FIRESTORE (CARREGAR E SALVAR DADOS)
 // =============================================================
 async function loadDataFromFirestore() {
   try {
@@ -127,7 +123,7 @@ async function loadDataFromFirestore() {
       siteData = { ...siteData, ...doc.data().payload };
     }
   } catch (err) {
-    console.warn("Usando dados locais:", err.message);
+    console.warn("Usando dados padrão:", err.message);
   }
   renderPublicView();
 }
@@ -146,16 +142,14 @@ async function saveDataToFirestore() {
   siteData.contactTitle = document.getElementById("adm-contact-title").value;
   siteData.contactText = document.getElementById("adm-contact-text").value;
 
-  // Sincroniza o array de projetos com os valores atuais dos campos
+  // Guarda dados apenas em texto para os projetos
   const projCards = document.querySelectorAll(".adm-proj-card");
   siteData.projects = Array.from(projCards).map((card) => {
-    const imgValue = card.querySelector(".proj-img-url").value.trim();
     return {
       title: card.querySelector(".proj-title").value,
       description: card.querySelector(".proj-desc").value,
       tags: card.querySelector(".proj-tags").value.split(',').map(t => t.trim()).filter(Boolean),
       link: card.querySelector(".proj-link").value,
-      imageUrl: imgValue,
       featured: card.querySelector(".proj-featured").checked
     };
   });
@@ -177,7 +171,7 @@ async function saveDataToFirestore() {
 }
 
 // =============================================================
-// 3. RENDERIZAÇÃO PÚBLICA (VISUALIZAÇÃO DO SITE)
+// 3. RENDERIZAÇÃO PÚBLICA (PORTFÓLIO)
 // =============================================================
 function renderPublicView() {
   const getEl = (id) => document.getElementById(id);
@@ -205,16 +199,8 @@ function renderPublicView() {
   const projGrid = getEl("view-projects-grid");
   if (projGrid) {
     projGrid.innerHTML = siteData.projects.map(p => {
-      const hasImage = p.imageUrl && p.imageUrl.trim() !== "";
-      
-      // Injeção de estilo direto na div para garantir altura visível da imagem
-      const mediaHtml = hasImage
-        ? `<div class="project-media" style="width: 100%; height: 200px; background-size: cover; background-position: center; background-repeat: no-repeat; background-image: url('${p.imageUrl}'); border-radius: 8px 8px 0 0;"></div>`
-        : `<div class="project-media" style="width: 100%; height: 140px; background: rgba(255,255,255,0.03); display: flex; align-items: center; justify-content: center; color: #666; font-size: 0.85rem; border-radius: 8px 8px 0 0;">Sem imagem</div>`;
-
       return `
         <div class="project-card ${p.featured ? 'featured' : ''}">
-          ${mediaHtml}
           <div class="project-body">
             <h3>${p.title}</h3>
             <p>${p.description}</p>
@@ -237,7 +223,7 @@ function renderPublicView() {
 }
 
 // =============================================================
-// 4. PAINEL ADM & UPLOAD DE IMAGENS
+// 4. PAINEL ADM
 // =============================================================
 function renderAdminFields() {
   document.getElementById("adm-name").value = siteData.name;
@@ -264,8 +250,6 @@ function renderAdminProjects() {
     card.className = "adm-proj-card";
     card.style.cssText = "background: var(--bg); padding: 16px; border-radius: 8px; border: 1px solid var(--line); display: flex; flex-direction: column; gap: 12px;";
 
-    const fileInputId = `file-input-${idx}`;
-
     card.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: center;">
         <strong>Projeto #${idx + 1}</strong>
@@ -275,52 +259,11 @@ function renderAdminProjects() {
       <div class="field"><label>Descrição</label><textarea class="proj-desc" rows="2">${p.description || ''}</textarea></div>
       <div class="field"><label>Tags (separadas por vírgula)</label><input type="text" class="proj-tags" value="${(p.tags || []).join(', ')}"></div>
       <div class="field"><label>Link do Projeto</label><input type="text" class="proj-link" value="${p.link || ''}"></div>
-      
-      <div class="field">
-        <label>Imagem do Projeto (URL ou Upload)</label>
-        <input type="text" class="proj-img-url" value="${p.imageUrl || ''}" placeholder="URL da imagem ou selecione um arquivo">
-        
-        <div style="margin-top: 8px; display: flex; align-items: center; gap: 12px;">
-          <label for="${fileInputId}" class="btn btn-ghost" style="cursor: pointer; padding: 6px 12px; display: inline-block;">
-            📁 Upload do Computador
-          </label>
-          <input type="file" id="${fileInputId}" accept="image/*" style="display: none;">
-          <span class="upload-status" style="font-size: 0.85rem; color: #a78bfa;"></span>
-        </div>
-      </div>
 
       <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer;">
         <input type="checkbox" class="proj-featured" ${p.featured ? 'checked' : ''}> Em Destaque (Dobra a largura)
       </label>
     `;
-
-    const fileInput = card.querySelector(`#${fileInputId}`);
-    const urlInput = card.querySelector(".proj-img-url");
-    const statusSpan = card.querySelector(".upload-status");
-
-    fileInput.addEventListener("change", async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      statusSpan.innerText = "Enviando...";
-      statusSpan.style.color = "#a78bfa";
-
-      try {
-        const storageRef = storage.ref(`projects/${Date.now()}_${file.name}`);
-        const snapshot = await storageRef.put(file);
-        const downloadUrl = await snapshot.ref.getDownloadURL();
-
-        urlInput.value = downloadUrl;
-        siteData.projects[idx].imageUrl = downloadUrl;
-        
-        statusSpan.innerText = "✓ Enviado!";
-        statusSpan.style.color = "#10b981";
-      } catch (err) {
-        statusSpan.innerText = "✕ Erro no envio";
-        statusSpan.style.color = "#ef4444";
-        alert("Erro no upload da imagem: " + err.message);
-      }
-    });
 
     container.appendChild(card);
   });
@@ -332,7 +275,7 @@ function removeProject(idx) {
 }
 
 function addProject() {
-  siteData.projects.push({ title: "Novo Projeto", description: "", tags: [], link: "", imageUrl: "", featured: false });
+  siteData.projects.push({ title: "Novo Projeto", description: "", tags: [], link: "", featured: false });
   renderAdminProjects();
 }
 
@@ -365,7 +308,7 @@ function addLink() {
 }
 
 // =============================================================
-// 5. CONTROLE DE EVENTOS & INTERFACE
+// 5. EVENTOS DA INTERFACE
 // =============================================================
 const fab = document.getElementById("admin-fab");
 const loginModal = document.getElementById("login-modal");
@@ -407,5 +350,5 @@ if (addProjBtn) addProjBtn.addEventListener("click", addProject);
 const addLinkBtn = document.getElementById("add-link-btn");
 if (addLinkBtn) addLinkBtn.addEventListener("click", addLink);
 
-// Inicializa a aplicação
+// Inicialização
 loadDataFromFirestore();
