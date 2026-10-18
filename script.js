@@ -17,7 +17,7 @@ const db = firebase.firestore();
 
 // Estado Global Inicial (Fallback)
 let siteData = {
-  adminPassword: "admin",
+  adminPassword: "Pedro3000@",
   name: "Pedro Santos",
   heroEyebrow: "Desenvolvedor Full Stack · AI-Driven Developer",
   heroTitle: "Construindo aplicações modernas com poder de IA.",
@@ -121,6 +121,10 @@ async function loadDataFromFirestore() {
     const doc = await db.collection("portfolio").doc("main").get();
     if (doc.exists && doc.data().payload) {
       siteData = { ...siteData, ...doc.data().payload };
+      // Força a senha padronizada caso não tenha sido atualizada no Firestore ainda
+      if (!siteData.adminPassword) {
+        siteData.adminPassword = "Pedro3000@";
+      }
     }
   } catch (err) {
     console.warn("Usando dados padrão:", err.message);
@@ -129,6 +133,11 @@ async function loadDataFromFirestore() {
 }
 
 async function saveDataToFirestore() {
+  const newPassField = document.getElementById("adm-password");
+  if (newPassField && newPassField.value.trim()) {
+    siteData.adminPassword = newPassField.value.trim();
+  }
+
   siteData.name = document.getElementById("adm-name").value;
   siteData.heroEyebrow = document.getElementById("adm-hero-eyebrow").value;
   siteData.heroTitle = document.getElementById("adm-hero-title").value;
@@ -142,7 +151,6 @@ async function saveDataToFirestore() {
   siteData.contactTitle = document.getElementById("adm-contact-title").value;
   siteData.contactText = document.getElementById("adm-contact-text").value;
 
-  // Guarda dados apenas em texto para os projetos
   const projCards = document.querySelectorAll(".adm-proj-card");
   siteData.projects = Array.from(projCards).map((card) => {
     return {
@@ -226,6 +234,9 @@ function renderPublicView() {
 // 4. PAINEL ADM
 // =============================================================
 function renderAdminFields() {
+  const passElem = document.getElementById("adm-password");
+  if (passElem) passElem.value = siteData.adminPassword;
+
   document.getElementById("adm-name").value = siteData.name;
   document.getElementById("adm-hero-eyebrow").value = siteData.heroEyebrow;
   document.getElementById("adm-hero-title").value = siteData.heroTitle;
